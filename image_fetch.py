@@ -6,11 +6,10 @@
 # * handle http retvalues
 # * allow to specify a output directory other than working dir?
 
-import sys, argparse
+import argparse, os, sys
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from urllib.request import urlretrieve, urlopen
-from os.path import basename, exists, isdir
 
 def _find_image_urls (url):
     """Return list of absolute urls for img elements found
@@ -35,14 +34,14 @@ def _write_list_to_file(lines, filename):
 def _get_filename_for_url (url, directory):
     """Makes up a filename for given url. Tries to make one that
        does not exist in directory yet"""
-    base = basename(urlparse(url).path)
+    base = os.path.basename(urlparse(url).path)
     if not base:
         base = "unnamed"
     base = directory + "/" + base
 
     count = 1
     filename = base
-    while exists(filename):
+    while os.path.exists(filename):
         count += 1
         filename = base + "(" + str(count) + ")"
     return filename
@@ -70,10 +69,10 @@ def main():
     parser.add_argument("url", help="URL of the web page")
     args = parser.parse_args()
 
-    if exists(args.directory) and not isdir(args.directory):
+    if os.path.exists(args.directory) and not os.path.isdir(args.directory):
         print ("Error: '%s' exists and is not a directory." % args.directory)
         exit()
-    if not exists(args.directory):
+    if not os.path.exists(args.directory):
         os.mkdir (args.directory)
 
     fetch_images(args.url, args.listfile, args.directory)
