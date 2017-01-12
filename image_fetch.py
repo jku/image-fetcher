@@ -28,7 +28,7 @@ def _write_list_to_file(lines, filename):
 
     for line in lines:
         if filename is None:
-            print ("%s\n" % line)
+            print ("%s" % line)
         else:
             list_file.write("%s\n" % line)
 
