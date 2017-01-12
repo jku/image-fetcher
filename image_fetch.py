@@ -1,24 +1,23 @@
 #!/usr/bin/python3
 
-# TODO:
-# * handle exceptions for soup, request and urllib: most are fine
-#   as is, but e.g. image download failure should not lead to exit
-# * handle http retvalues
-# * allow to specify a output directory other than working dir?
-
 import argparse, os, sys
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from urllib.request import urlretrieve, urlopen
+from urllib.error import URLError
 
 def _find_image_urls (url):
     """Return list of absolute urls for img elements found
        in the content of the given url"""
-    response = urlopen(url)
-    soup = BeautifulSoup(response.read(), "html.parser")
-    elements = soup.find_all(name="img")
-    image_urls = [elem["src"] for elem in elements]
-    return [urljoin(url, image_url) for image_url in image_urls]
+    try:
+        response = urlopen(url)
+        soup = BeautifulSoup(response.read(), "html.parser")
+        elements = soup.find_all(name="img")
+        image_urls = [elem["src"] for elem in elements]
+        return [urljoin(url, image_url) for image_url in image_urls]
+    except (URLError, ValueError) as e:
+        print ("Failed to fetch '%s': %s" % (url, e), file=sys.stderr)
+        return []
 
 def _write_list_to_file(lines, filename):
     """Write the list of strings to given file"""
@@ -58,24 +57,28 @@ def fetch_images(url, listfile, directory):
             urlretrieve(url, _get_filename_for_url(url, directory))
         except Exception as e:
             # whatever the failure, we want to continue with next file
-            print ("Failed to retrieve %s: %s" % (url, e))
+            print ("Failed to retrieve %s: %s" % (url, e), file=sys.stderr)
 
 def main():
     parser = argparse.ArgumentParser(description='Download images of a web page.')
     parser.add_argument('-l', '--listfile', type=str, default=None,
                         help='filename to write list of urls to (default is to print the list)')
-    parser.add_argument('-d', '--directory', type=str, default=None,
+    parser.add_argument('-d', '--directory', type=str, default=os.getcwd(),
                         help='directory to download images to (default is current directory)')
     parser.add_argument("url", help="URL of the web page")
     args = parser.parse_args()
 
     if os.path.exists(args.directory) and not os.path.isdir(args.directory):
-        print ("Error: '%s' exists and is not a directory." % args.directory)
+        print ("Error: '%s' exists and is not a directory." % args.directory, file=sys.stderr)
         exit()
     if not os.path.exists(args.directory):
         os.mkdir (args.directory)
 
-    fetch_images(args.url, args.listfile, args.directory)
+    try:
+        fetch_images(args.url, args.listfile, args.directory)
+    except Exception as e:
+        # oops, this is definitely fatal
+        print ("Error: %s" % e, file=sys.stderr)
 
 if __name__ == "__main__":
     main()
