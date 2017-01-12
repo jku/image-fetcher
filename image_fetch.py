@@ -1,12 +1,14 @@
 #!/usr/bin/python3
 
-import argparse, os, sys
-from bs4 import BeautifulSoup
+import argparse
+import os
+import sys
 from urllib.parse import urljoin, urlparse
 from urllib.request import urlretrieve, urlopen
 from urllib.error import URLError
+from bs4 import BeautifulSoup
 
-def _find_image_urls (url):
+def _find_image_urls(url):
     """Return list of absolute urls for img elements found
        in the content of the given url"""
     try:
@@ -16,7 +18,7 @@ def _find_image_urls (url):
         image_urls = [elem["src"] for elem in elements]
         return [urljoin(url, image_url) for image_url in image_urls]
     except (URLError, ValueError) as e:
-        print ("Failed to fetch '%s': %s" % (url, e), file=sys.stderr)
+        print("Failed to fetch '%s': %s" % (url, e), file=sys.stderr)
         return []
 
 def _write_list_to_file(lines, filename):
@@ -26,11 +28,11 @@ def _write_list_to_file(lines, filename):
 
     for line in lines:
         if filename is None:
-            print ("%s" % line)
+            print("%s" % line)
         else:
             list_file.write("%s\n" % line)
 
-def _get_filename_for_url (url, directory):
+def _get_filename_for_url(url, directory):
     """Makes up a filename for given url. Tries to make one that
        does not exist in directory yet"""
     base = os.path.basename(urlparse(url).path)
@@ -57,7 +59,7 @@ def fetch_images(url, listfile, directory):
             urlretrieve(url, _get_filename_for_url(url, directory))
         except Exception as e:
             # whatever the failure, we want to continue with next file
-            print ("Failed to retrieve %s: %s" % (url, e), file=sys.stderr)
+            print("Failed to retrieve %s: %s" % (url, e), file=sys.stderr)
 
 def main():
     parser = argparse.ArgumentParser(description='Download images of a web page.')
@@ -69,16 +71,16 @@ def main():
     args = parser.parse_args()
 
     if os.path.exists(args.directory) and not os.path.isdir(args.directory):
-        print ("Error: '%s' exists and is not a directory." % args.directory, file=sys.stderr)
+        print("Error: '%s' exists and is not a directory." % args.directory, file=sys.stderr)
         exit()
     if not os.path.exists(args.directory):
-        os.mkdir (args.directory)
+        os.mkdir(args.directory)
 
     try:
         fetch_images(args.url, args.listfile, args.directory)
     except Exception as e:
         # oops, this is definitely fatal
-        print ("Error: %s" % e, file=sys.stderr)
+        print("Error: %s" % e, file=sys.stderr)
 
 if __name__ == "__main__":
     main()

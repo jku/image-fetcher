@@ -1,6 +1,7 @@
-import image_fetch
-import os, tempfile
+import os
+import tempfile
 from mock import patch, Mock
+import image_fetch
 
 # Tests compatible with pytest-3
 
