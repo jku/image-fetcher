@@ -67,19 +67,21 @@ def _get_filename_for_url(url, directory):
         filename = base + "(" + str(count) + ")"
     return filename
 
-
 def fetch_images(url, listfile, directory):
     """Download all images found in the HTML content of given url into
        given directory, write the image URLs to a file. Will overwrite
        listfile if it exists, but tries not to overwrite image files."""
     urls = _find_image_urls(url)
-    _write_list_to_file(urls, listfile)
+    retrieved_urls = []
     for url in urls:
         try:
             urlretrieve(url, _get_filename_for_url(url, directory))
+            retrieved_urls.append(url)
         except Exception as e:
             # whatever the failure, we want to continue with next file
             print("Failed to retrieve %s: %s" % (url, e), file=sys.stderr)
+
+    _write_list_to_file(retrieved_urls, listfile)
 
 def main():
     parser = argparse.ArgumentParser(description='Download images of a web page.')
