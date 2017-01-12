@@ -6,17 +6,37 @@ import sys
 from urllib.parse import urljoin, urlparse
 from urllib.request import urlretrieve, urlopen
 from urllib.error import URLError
-from bs4 import BeautifulSoup
+from html.parser import HTMLParser
+
+class ImgSrcParser(HTMLParser):
+    def __init__(self):
+        HTMLParser.__init__(self)
+        self.image_srcs = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "img":
+            self.image_srcs.append(dict(attrs)["src"])
+
+def _get_charset(message):
+    """Return charset, given a http.client.HTTPMessage"""
+    if not message["content-type"] or not "charset=" in message["content-type"]:
+        # utter guesswork
+        return "utf-8"
+    charset = message["content-type"].split("charset=")[1]
+    return charset.split(";")[0]
 
 def _find_image_urls(url):
     """Return list of absolute urls for img elements found
        in the content of the given url"""
     try:
         response = urlopen(url)
-        soup = BeautifulSoup(response.read(), "html.parser")
-        elements = soup.find_all(name="img")
-        image_urls = [elem["src"] for elem in elements]
-        return [urljoin(url, image_url) for image_url in image_urls]
+        charset = _get_charset(response.info())
+        html = response.read().decode(charset)
+
+        parser = ImgSrcParser()
+        parser.feed(html)
+
+        return [urljoin(url, image_url) for image_url in parser.image_srcs]
     except (URLError, ValueError) as e:
         print("Failed to fetch '%s': %s" % (url, e), file=sys.stderr)
         return []

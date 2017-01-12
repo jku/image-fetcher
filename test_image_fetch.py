@@ -15,7 +15,7 @@ html = """<!DOCTYPE html>
           <img src="http://test.com/absolute_cat.gif">
           </body>
           </html>"""
-attrs = {'read.return_value':html}
+attrs = {'read.return_value':html.encode('ISO-8859-1'), 'info.return_value':{'content-type':'text/html; charset=ISO-8859-1'}}
 urlopen_mock_obj = Mock(**attrs)
 
 
