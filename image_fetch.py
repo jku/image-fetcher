@@ -6,12 +6,10 @@
 # * handle http retvalues
 # * decide filenames for images - try to decipher from uri or just
 #   use "001" etc as name?
-# * decide filename for the url list?
 # * allow to specify a output directory other than working dir?
-# * use proper options handling
 
+import sys, argparse
 from bs4 import BeautifulSoup
-import sys
 from urllib.parse import urljoin
 from urllib.request import urlretrieve, urlopen
 
@@ -26,22 +24,33 @@ def _find_image_urls (url):
 
 def _write_list_to_file(lines, filename):
     """Write the list of strings to given file"""
-    list_file = open(filename, 'w')
-    for line in lines:
-        list_file.write("%s\n" % line)
+    if filename is not None:
+        list_file = open(filename, 'w')
 
-def fetch_images(url):
+    for line in lines:
+        if filename is None:
+            print ("%s\n" % line)
+        else:
+            list_file.write("%s\n" % line)
+
+def fetch_images(url, listfile):
     """Download all images found in the HTML content of given url,
        write the image URLs to a file"""
     urls = _find_image_urls(url)
-    _write_list_to_file(urls, "testfile")
+    _write_list_to_file(urls, listfile)
     for url in urls:
         filename, headers = urlretrieve(url)
         print (filename)
 
+def main():
+    parser = argparse.ArgumentParser(description='Download images of a web page.')
+    parser.add_argument('-l', '--listfile', type=str, default=None,
+                        help='filename to write list of urls to (default is to print the list)')
+    parser.add_argument("url", help="URL of the web page")
+    args = parser.parse_args()
+
+    fetch_images(args.url, args.listfile)
+
 if __name__ == "__main__":
-    if len(sys.argv) != 2 or "-h" in sys.argv or "--help" in sys.argv:
-        print ("Usage:\n  %s <url>" % sys.argv[0])
-        sys.exit()
-    fetch_images(sys.argv[1])
+    main()
 
