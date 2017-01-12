@@ -4,14 +4,13 @@
 # * handle exceptions for soup, request and urllib: most are fine
 #   as is, but e.g. image download failure should not lead to exit
 # * handle http retvalues
-# * decide filenames for images - try to decipher from uri or just
-#   use "001" etc as name?
 # * allow to specify a output directory other than working dir?
 
 import sys, argparse
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 from urllib.request import urlretrieve, urlopen
+from os.path import basename, exists
 
 def _find_image_urls (url):
     """Return list of absolute urls for img elements found
@@ -33,14 +32,32 @@ def _write_list_to_file(lines, filename):
         else:
             list_file.write("%s\n" % line)
 
+def _get_filename_for_url (url):
+    """Makes up a filename for given url. Tries to make one that
+       does not exist in directory yet"""
+    base = basename(urlparse(url).path)
+    if not base:
+        base = "unnamed"
+    count = 1
+    filename = base
+    while exists(filename):
+        count += 1
+        filename = base + "(" + str(count) + ")"
+    return filename
+
+
 def fetch_images(url, listfile):
     """Download all images found in the HTML content of given url,
-       write the image URLs to a file"""
+       write the image URLs to a file. Will overwrite listfile if it
+       exists, but tries not to overwrite image files."""
     urls = _find_image_urls(url)
     _write_list_to_file(urls, listfile)
     for url in urls:
-        filename, headers = urlretrieve(url)
-        print (filename)
+        try:
+            urlretrieve(url, _get_filename_for_url(url))
+        except Exception as e:
+            # whatever the failure, we want to continue with next file
+            print ("Failed to retrieve %s: %s" % (url, e))
 
 def main():
     parser = argparse.ArgumentParser(description='Download images of a web page.')
