@@ -15,16 +15,13 @@ import sys
 from urllib.parse import urljoin
 from urllib.request import urlretrieve, urlopen
 
-def _find_image_src_attributes(url):
-    response = urlopen(url)
-    soup = BeautifulSoup(response.read(), "html.parser")
-    elements = soup.find_all(name="img")
-    return [elem["src"] for elem in elements]
-
 def _find_image_urls (url):
     """Return list of absolute urls for img elements found
        in the content of the given url"""
-    image_urls = _find_image_src_attributes(url)
+    response = urlopen(url)
+    soup = BeautifulSoup(response.read(), "html.parser")
+    elements = soup.find_all(name="img")
+    image_urls = [elem["src"] for elem in elements]
     return [urljoin(url, image_url) for image_url in image_urls]
 
 def _write_list_to_file(lines, filename):

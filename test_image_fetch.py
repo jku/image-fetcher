@@ -18,15 +18,6 @@ urlopen_mock_obj = Mock(**attrs)
 
 
 @patch('image_fetch.urlopen')
-def test_find_image_src_attributes(mock_urlopen):
-    mock_urlopen.return_value = urlopen_mock_obj
-
-    expected = ['cat.gif',
-                'dir/relative_cat.gif',
-                'http://test.com/absolute_cat.gif']
-    assert image_fetch._find_image_src_attributes("http://example.com") == expected
-
-@patch('image_fetch.urlopen')
 def test_find_image_urls(mock_urlopen):
     mock_urlopen.return_value = urlopen_mock_obj
 
