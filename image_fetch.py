@@ -40,7 +40,8 @@ def _find_image_urls(url):
         parser = ImgSrcParser()
         parser.feed(html)
 
-        return [urljoin(url, image_url) for image_url in parser.image_srcs]
+        # Use the (possibly redirected) baseurl, in case url is not absolute already
+        return [urljoin(response.geturl(), img_url) for img_url in parser.image_srcs]
     except (URLError, ValueError) as e:
         print("Failed to fetch '%s': %s" % (url, e), file=sys.stderr)
         return []

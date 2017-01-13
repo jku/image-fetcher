@@ -5,8 +5,6 @@ import image_fetch
 
 # Tests compatible with pytest-3
 
-# Create a mock of urllib.urlopen() return value: it's an object
-# with a read() function that returns the html.
 html = """<!DOCTYPE html>
           <html>
           <body>
@@ -15,16 +13,23 @@ html = """<!DOCTYPE html>
           <img src="http://test.com/absolute_cat.gif">
           </body>
           </html>"""
-attrs = {'read.return_value':html.encode('ISO-8859-1'), 'info.return_value':{'content-type':'text/html; charset=ISO-8859-1'}}
-urlopen_mock_obj = Mock(**attrs)
 
+# Create a mock of urllib.urlopen() return value: it's an object
+# with these methods:
+# .read(): returns encoded content
+# .info(): returns HTTP headers
+# .geturl(): returns the url that was actually used after redirects
+attrs = {'read.return_value':html.encode('ISO-8859-1'),
+         'info.return_value':{'content-type':'text/html; charset=ISO-8859-1'},
+         'geturl.return_value':'http://redirected.com'}
+urlopen_mock_obj = Mock(**attrs)
 
 @patch('image_fetch.urlopen')
 def test_find_image_urls(mock_urlopen):
     mock_urlopen.return_value = urlopen_mock_obj
 
-    expected = ['http://example.com/cat.gif',
-                'http://example.com/dir/relative_cat.gif',
+    expected = ['http://redirected.com/cat.gif',
+                'http://redirected.com/dir/relative_cat.gif',
                 'http://test.com/absolute_cat.gif']
     urls = image_fetch._find_image_urls("http://example.com")
     urls.sort()
