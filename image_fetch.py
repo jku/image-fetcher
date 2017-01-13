@@ -15,7 +15,11 @@ class ImgSrcParser(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         if tag == "img":
-            self.image_srcs.append(dict(attrs)["src"])
+            try:
+                self.image_srcs.append(dict(attrs)["src"])
+            except KeyError as e:
+                # No src attribute
+                pass
 
 def _get_charset(message):
     """Return charset, given a http.client.HTTPMessage"""
