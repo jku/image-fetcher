@@ -59,10 +59,17 @@ def _write_list_to_file(lines, filename):
 def _get_filename_for_url(url, directory):
     """Makes up a filename for given url. Tries to make one that
        does not exist in directory yet"""
-    base = os.path.basename(urlparse(url).path)
+    parsed_url = urlparse(url)
+    base = os.path.basename(parsed_url.path)
+    if base and parsed_url.query:
+        base += "?"
+    base += parsed_url.query
+
     if not base:
         base = "unnamed"
-    base = directory + "/" + base
+
+    # limit filename length to stay under common filesystem limits
+    base = directory + "/" + base[-249:]
 
     count = 1
     filename = base
