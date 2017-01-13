@@ -11,12 +11,12 @@ from html.parser import HTMLParser
 class ImgSrcParser(HTMLParser):
     def __init__(self):
         HTMLParser.__init__(self)
-        self.image_srcs = []
+        self.image_srcs = set()
 
     def handle_starttag(self, tag, attrs):
         if tag == "img":
             try:
-                self.image_srcs.append(dict(attrs)["src"])
+                self.image_srcs.add(dict(attrs)["src"])
             except KeyError as e:
                 # No src attribute
                 pass

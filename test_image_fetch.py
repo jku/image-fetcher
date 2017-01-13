@@ -26,7 +26,9 @@ def test_find_image_urls(mock_urlopen):
     expected = ['http://example.com/cat.gif',
                 'http://example.com/dir/relative_cat.gif',
                 'http://test.com/absolute_cat.gif']
-    assert image_fetch._find_image_urls("http://example.com") == expected
+    urls = image_fetch._find_image_urls("http://example.com")
+    urls.sort()
+    assert urls == expected
 
 def test_get_filename_for_url():
     tmpdir = tempfile.mkdtemp()
