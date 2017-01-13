@@ -1,6 +1,6 @@
 `image_fetch.py` downloads images from a web page. It does not follow links, just fetches whatever is in src attributes of every img-element in page.
 
-Depends on core python modules (urllib, html). Tests also depend on mock and are compatible with pytest-3.
+Depends on python 3 and a few core modules (urllib, html). Tests also depend on mock and are compatible with pytest-3.
 
     usage: image_fetch.py [-h] [-l LISTFILE] [-d DIRECTORY] url
 

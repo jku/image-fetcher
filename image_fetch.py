@@ -9,6 +9,8 @@ from urllib.error import URLError
 from html.parser import HTMLParser
 
 class ImgSrcParser(HTMLParser):
+    """Collects src-attribute values of all img-elements
+       into the image_srcs set when parsing."""
     def __init__(self):
         HTMLParser.__init__(self)
         self.image_srcs = set()
